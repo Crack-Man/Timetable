@@ -17,18 +17,28 @@ class Requests:
                                         "INNER JOIN [Disciplines of groups] ON [Academic disciplines].[Код дисциплины] = [Disciplines of groups].[Код дисциплины]"
                                         "WHERE [Код группы] = ?", (id_group,)).fetchall()
 
-    def busy_group(self, id_group, lesson, day):
+    def get_rooms_busy(self):
         with self.connection:
-            return self.cursor.execute("SELECT * FROM [Timetable] WHERE [Код группы] = ? AND [Номер пары] = ? AND [День недели] = ?", (id_group, lesson, day,)).fetchone()
+            rooms_tuple = self.cursor.execute("SELECT [Код помещения], [День недели], [Номер пары], [Тип], [Вместимость], 0 AS [Занятость] FROM [Rooms], [Days of the week], [Call schedule]").fetchall()
+        rooms_list = []
+        for room in rooms_tuple:
+            rooms_list.append(list(room))
+        return rooms_list
 
-    def busy_teacher(self, id_teacher, lesson, day):
+    def get_teachers_busy(self):
         with self.connection:
-            return self.cursor.execute("SELECT * FROM [Timetable] WHERE [Код преподавателя] = ? AND [Номер пары] = ? AND [День недели] = ?", (id_teacher, lesson, day,)).fetchone()
+            teachers_tuple = self.cursor.execute("SELECT [Код преподавателя], [День недели], [Номер пары], 0 AS [Занятость] FROM [Teachers], [Days of the week], [Call schedule]").fetchall()
+        teachers_list = []
+        for teacher in teachers_tuple:
+            teachers_list.append(list(teacher))
+        return teachers_list
 
-    def get_rooms(self, type_of_room, quantity_of_students):
+    def get_timetable(self):
         with self.connection:
-            return self.cursor.execute("SELECT * FROM [Rooms] WHERE [Тип] = ? AND [Вместимость] >= ?", (type_of_room, quantity_of_students,)).fetchall()
-
-    def get_busy_rooms(self, lesson, day):
-        with self.connection:
-            return self.cursor.execute("SELECT [Код помещения] FROM [Timetable] WHERE [Номер пары] = ? AND [День недели] = ?", (lesson, day,)).fetchall()
+            timetable_tuple = self.cursor.execute("SELECT [Код группы], [День недели], [Номер пары], 0 AS [Код дисциплины], 0 AS [Код преподавателя], 0 AS [Код помещения], 0 AS Тип "
+                                                   "FROM [Groups], [Days of the week], [Call schedule]"
+                                                    ).fetchall()
+        timetable_list = []
+        for double_class in timetable_tuple:
+            timetable_list.append(list(double_class))
+        return timetable_list
