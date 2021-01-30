@@ -61,17 +61,6 @@ def print_rooms():
     for room in rooms:
         print(room)
 
-def more_5(day, id_group, id_teacher):
-    quantity_class_group = 0
-    quantity_class_teacher = 0
-    for double_class in timetable:
-        if double_class[1] == day:
-            if double_class[0] == id_group and double_class[3]:
-                quantity_class_group += 1
-            if double_class[4] == id_teacher:
-                quantity_class_teacher += 1
-    return quantity_class_group >= 5 or quantity_class_teacher >= 5
-
 def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quantity_of_students, id_discipline):
     days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"]
     lessons = [i for i in range(1, 9)]
@@ -80,17 +69,16 @@ def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quant
         for day in days:
             if not is_searched:
                 day_with_oddness = day + " нечет" if oddness else day + " чет"
-                if not more_5(day_with_oddness, id_group, id_teacher):
-                    for lesson in lessons:
-                        if not is_searched:
-                            if not busy_group(id_group, day_with_oddness, lesson):
-                                if not busy_teacher(id_teacher, day_with_oddness, lesson):
-                                    id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
-                                    if id_room:
-                                        add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
-                                        hours -= 1
-                                        is_searched = True
-                                        break
+                for lesson in lessons:
+                    if not is_searched:
+                        if not busy_group(id_group, day_with_oddness, lesson):
+                            if not busy_teacher(id_teacher, day_with_oddness, lesson):
+                                id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
+                                if id_room:
+                                    add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
+                                    hours -= 1
+                                    is_searched = True
+                                    break
 
 def toPer(hours):
     per_2weeks = hours / study_weeks
@@ -118,8 +106,8 @@ def create_timetable():
             # allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", quantity_of_students, id_discipline)
             # function(lections_per_week[0])
     print_timetable()
-    # print_teachers_timetable_for_teacher(1)
+    print_teachers_timetable_for_teacher(1)
     # print_rooms()
-
+"""BLA"""
 if __name__ == '__main__':
     create_timetable()
