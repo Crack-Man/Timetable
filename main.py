@@ -43,9 +43,19 @@ def print_timetable():
     for double_class in timetable:
         print(double_class)
 
+def print_timetable(id_group):
+    for double_class in timetable:
+        if double_class[0] == id_group:
+            print(double_class)
+
 def print_teachers():
     for teacher in teachers:
         print(teacher)
+
+def print_teachers(id_teacher):
+    for teacher in teachers:
+        if teacher[0] == id_teacher:
+            print(teacher)
 
 def print_rooms():
     for room in rooms:
@@ -95,8 +105,8 @@ def create_timetable():
             # allocation_of_week(practice_per_week[0], id_group, id_teacher, 1, "Для практических", quantity_of_students, id_discipline)
             # allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", quantity_of_students, id_discipline)
             # function(lections_per_week[0])
-    # print_timetable()
-    # print_teachers()
+    #print_timetable()
+    print_teachers(1)
     # print_rooms()
 
 if __name__ == '__main__':
