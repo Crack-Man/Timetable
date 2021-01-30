@@ -35,10 +35,20 @@ class Requests:
 
     def get_timetable(self):
         with self.connection:
-            timetable_tuple = self.cursor.execute("SELECT [Код группы], [День недели], [Номер пары], 0 AS [Код дисциплины], 0 AS [Код преподавателя], 0 AS [Код помещения], 0 AS Тип "
+            timetable_tuple = self.cursor.execute("SELECT [Код группы], [День недели], [Номер пары], 0 AS [Код дисциплины], "
+                                                  "0 AS [Код преподавателя], 0 AS [Код помещения], 0 AS Тип, 0 AS [Код практической подгруппы], 0 AS [Код лаборатнорной подгруппы]  "
                                                    "FROM [Groups], [Days of the week], [Call schedule]"
                                                     ).fetchall()
         timetable_list = []
         for double_class in timetable_tuple:
             timetable_list.append(list(double_class))
         return timetable_list
+
+    def get_subgroups(self, id_group):
+        with self.connection:
+            practice = self.cursor.execute("SELECT * FROM [Practice subgroups] WHERE [Код группы] = ?", (id_group,)).fetchall()
+            lab = self.cursor.execute("SELECT * FROM [Laboratory subgroups] WHERE [Код группы] = ?", (id_group,)).fetchall()
+        subgroups = []
+        subgroups.append(practice)
+        subgroups.append(lab)
+        return subgroups

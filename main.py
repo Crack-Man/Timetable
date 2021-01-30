@@ -61,7 +61,7 @@ def print_rooms():
     for room in rooms:
         print(room)
 
-def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quantity_of_students, id_discipline):
+def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quantity_of_students, id_discipline, *kwargs):
     days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"]
     lessons = [i for i in range(1, 9)]
     while hours > 0:
@@ -102,12 +102,15 @@ def create_timetable():
             lections_per_week, practice_per_week, lab_per_week = toPer(hours_lections), toPer(hours_practice), toPer(hours_lab)
             # print(lections_per_week, practice_per_week, lab_per_week)
             allocation_of_week(lections_per_week[0], id_group, id_teacher, 1, "Лекционный", quantity_of_students, id_discipline)
-            # allocation_of_week(practice_per_week[0], id_group, id_teacher, 1, "Для практических", quantity_of_students, id_discipline)
+            subgroups = db.get_subgroups(id_group)
+            # if len(subgroups[0]) != 0:
+            #     for subgroup in subgroups[0]:
+            #         allocation_of_week(practice_per_week[0], id_group, id_teacher, 1, "Для практических", subgroup[3], id_discipline, subgroup[0])
             # allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", quantity_of_students, id_discipline)
             # function(lections_per_week[0])
     print_timetable()
-    print_teachers_timetable_for_teacher(1)
+    # print_teachers_timetable_for_teacher(1)
     # print_rooms()
-"""BLA"""
+
 if __name__ == '__main__':
     create_timetable()
