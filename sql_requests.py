@@ -42,6 +42,27 @@ class Requests:
         timetable_list = []
         for double_class in timetable_tuple:
             timetable_list.append(list(double_class))
+
+        timetable_tuple = self.cursor.execute("SELECT [Groups].[Код группы], [День недели], [Номер пары], "
+                                            "0 AS [Код дисциплины], 0 AS [Код преподавателя], 0 AS [Код помещения], 0 AS Тип, "
+                                            "[Код подгруппы] AS [Код практической подгруппы], 0 AS [Код лаборатнорной подгруппы] "
+                                            "FROM Groups INNER JOIN [Practice subgroups] ON [Groups].[Код группы] = [Practice subgroups].[Код группы], "
+                                            "[Days of the week], "
+                                            "[Call schedule]").fetchall()
+
+        for double_class in timetable_tuple:
+            timetable_list.append(list(double_class))
+
+        timetable_tuple = self.cursor.execute("SELECT [Groups].[Код группы], [День недели], [Номер пары], "
+                                              "0 AS [Код дисциплины], 0 AS [Код преподавателя], 0 AS [Код помещения], 0 AS Тип, "
+                                              "0 AS [Код практической подгруппы], [Код подгруппы] AS [Код лаборатнорной подгруппы] "
+                                              "FROM Groups INNER JOIN [Laboratory subgroups] ON [Groups].[Код группы] = [Laboratory subgroups].[Код группы], "
+                                              "[Days of the week], "
+                                              "[Call schedule]").fetchall()
+
+        for double_class in timetable_tuple:
+            timetable_list.append(list(double_class))
+
         return timetable_list
 
     def get_subgroups(self, id_group):
