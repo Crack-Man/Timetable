@@ -147,11 +147,11 @@ def create_timetable():
             if len(subgroups[0]) != 0:
                 for subgroup in subgroups[0]:
                     allocation_of_week(practice_per_week[0], id_group, id_teacher, 1, "Для практических", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
-                    allocation_of_week(practice_per_week[0], id_group, id_teacher, 0, "Для практических", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
+                    allocation_of_week(practice_per_week[1], id_group, id_teacher, 0, "Для практических", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
             if len(subgroups[1]) != 0:
                 for subgroup in subgroups[1]:
                     allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
-                    allocation_of_week(lab_per_week[0], id_group, id_teacher, 0, "Лабораторный", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
+                    allocation_of_week(lab_per_week[1], id_group, id_teacher, 0, "Лабораторный", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
     # print_timetable()
     print_active_timetable()
     # print_teachers_timetable_for_teacher(1)
