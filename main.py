@@ -91,6 +91,20 @@ def print_rooms():
     for room in rooms:
         print(room)
 
+def more_5_for_group(id_group, day):
+    count = 0
+    for double_class in timetable:
+        if double_class[0] == id_group and double_class[1] == day and double_class[3]:
+            count += 1
+    return count > 5
+
+def more_5_for_teacher(id_teacher, day):
+    count = 0
+    for double_class in timetable:
+        if double_class[4] == id_teacher and double_class[1] == day and double_class[3]:
+            count += 1
+    return count > 5
+
 def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quantity_of_students, id_discipline, **kwargs):
     days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"]
     lessons = [i for i in range(1, 9)]
@@ -99,29 +113,38 @@ def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quant
         for day in days:
             if not is_searched:
                 day_with_oddness = day + " нечет" if oddness else day + " чет"
-                for lesson in lessons:
-                    if not is_searched:
-                        if len(kwargs) == 0:
-                            group_is_busy = busy_group(id_group, day_with_oddness, lesson)
-                        elif 'practice_subgroups' in kwargs:
-                            group_is_busy = busy_group(id_group, day_with_oddness, lesson, practice_subgroups=kwargs['practice_subgroups'])
-                        elif 'laboratory_subgroups' in kwargs:
-                            group_is_busy = busy_group(id_group, day_with_oddness, lesson, laboratory_subgroups=kwargs['laboratory_subgroups'])
-                        if not group_is_busy:
-                            if not busy_teacher(id_teacher, day_with_oddness, lesson):
-                                id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
-                                if id_room:
-                                    if len(kwargs) == 0:
-                                        add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
-                                    elif kwargs['practice_subgroups']:
-                                        add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, practice_subgroups=kwargs['practice_subgroups'])
-                                    elif kwargs['laboratory_subgroups']:
-                                        add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, laboratory_subgroups=kwargs['laboratory_subgroups'])
-                                    hours -= 1
-                                    is_searched = True
-                                    break
+                if not more_5_for_group(id_group, day_with_oddness) and not more_5_for_teacher(id_teacher, day_with_oddness):
+                    for lesson in lessons:
+                        if not is_searched:
+                            if len(kwargs) == 0:
+                                group_is_busy = busy_group(id_group, day_with_oddness, lesson)
+                            elif 'practice_subgroups' in kwargs:
+                                group_is_busy = busy_group(id_group, day_with_oddness, lesson, practice_subgroups=kwargs['practice_subgroups'])
+                            elif 'laboratory_subgroups' in kwargs:
+                                group_is_busy = busy_group(id_group, day_with_oddness, lesson, laboratory_subgroups=kwargs['laboratory_subgroups'])
+                            if not group_is_busy:
+                                if not busy_teacher(id_teacher, day_with_oddness, lesson):
+                                    id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
+                                    if id_room:
+                                        if len(kwargs) == 0:
+                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
+                                        elif kwargs['practice_subgroups']:
+                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, practice_subgroups=kwargs['practice_subgroups'])
+                                        elif kwargs['laboratory_subgroups']:
+                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, laboratory_subgroups=kwargs['laboratory_subgroups'])
+                                        hours -= 1
+                                        is_searched = True
+                                        break
+        if not is_searched:
+            print("Не удалось найти свободное время для дисциплины {} группы {}".format(id_discipline, id_group))
+            break
 
 def toPer(hours):
+    """
+    Изначальная формула: (hours / 2) / (study_weeks / 2),
+    так как один академический час равен 45 минутам, т.е. hours / 2 считаются за пары.
+    С другой стороны, мы рассчитываем пары недель, т.е. study_weeks / 2, значение которого включает четную и нечетную недели
+    """
     per_2weeks = hours / study_weeks
     return [int(per_2weeks // 2 + per_2weeks % 2), int(per_2weeks // 2)]
 
@@ -130,7 +153,6 @@ def create_timetable():
         id_group = group[0]
         name_of_group = group[1]
         quantity_of_students = group[3]
-        # print(group)
 
         for discipline in db.get_disciplines_for_group(group[0]):
             id_discipline = discipline[0]
@@ -140,7 +162,6 @@ def create_timetable():
             hours_lab = discipline[4]
             id_teacher = discipline[5]
             lections_per_week, practice_per_week, lab_per_week = toPer(hours_lections), toPer(hours_practice), toPer(hours_lab)
-            # print(lections_per_week, practice_per_week, lab_per_week)
             allocation_of_week(lections_per_week[0], id_group, id_teacher, 1, "Лекционный", quantity_of_students, id_discipline)
             allocation_of_week(lections_per_week[1], id_group, id_teacher, 0, "Лекционный", quantity_of_students, id_discipline)
             subgroups = db.get_subgroups(id_group)
