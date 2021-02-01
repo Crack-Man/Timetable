@@ -50,7 +50,7 @@ def add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id
                 double_class[5] = id_room
                 double_class[6] = type_of_room
         elif 'laboratory_subgroups' in kwargs:
-            if double_class[0] == id_group and double_class[1] == day_with_oddness and double_class[2] == lesson and double_class[7] == kwargs['laboratory_subgroups']:
+            if double_class[0] == id_group and double_class[1] == day_with_oddness and double_class[2] == lesson and double_class[8] == kwargs['laboratory_subgroups']:
                 double_class[3] = id_discipline
                 double_class[4] = id_teacher
                 double_class[5] = id_room
@@ -73,10 +73,16 @@ def print_active_timetable():
         if double_class[3]:
             print(double_class)
 
-def print_timetable_for_group(id_group):
+def print_timetable_for_group(id_group, *args):
     for double_class in timetable:
         if double_class[0] == id_group and double_class[3]:
-            print(double_class)
+            if len(args) == 1:
+                day = str(args[0])
+                if double_class[1] == day:
+                    print(double_class)
+            else:
+                print(double_class)
+
 
 def print_teachers_timetable():
     for teacher in teachers:
@@ -96,14 +102,39 @@ def more_5_for_group(id_group, day):
     for double_class in timetable:
         if double_class[0] == id_group and double_class[1] == day and double_class[3]:
             count += 1
-    return count > 5
+    return count >= 5
 
 def more_5_for_teacher(id_teacher, day):
     count = 0
     for double_class in timetable:
         if double_class[4] == id_teacher and double_class[1] == day and double_class[3]:
             count += 1
-    return count > 5
+    return count >= 5
+
+def more_1_window_group(id_group, day, lesson, **kwargs):
+    active_lesson_group = 0
+    for double_class in timetable:
+        if double_class[0] == id_group and double_class[1] == day and double_class[3]:
+            if len(kwargs) == 0:
+                active_lesson_group = double_class[2]
+            elif 'practise_subgroups' in kwargs:
+                if not double_class[7] and not double_class[8] or double_class[7] == kwargs['practise_subgroups']:
+                    active_lesson_group = double_class[2]
+            elif 'laboratory_subgroups' in kwargs:
+                if not double_class[7] and not double_class[8] or double_class[8] == kwargs['laboratory_subgroups']:
+                    active_lesson_group = double_class[2]
+    if active_lesson_group:
+        return lesson - active_lesson_group > 1
+    return False
+
+def more_1_window_teacher(id_teacher, day, lesson):
+    active_lesson_teacher = 0
+    for double_class in timetable:
+        if double_class[4] == id_teacher and double_class[1] == day and double_class[3]:
+            active_lesson_teacher = double_class[2]
+    if active_lesson_teacher:
+        return lesson - active_lesson_teacher > 1
+    return False
 
 def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quantity_of_students, id_discipline, **kwargs):
     days = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"]
@@ -117,24 +148,32 @@ def allocation_of_week(hours, id_group, id_teacher, oddness, type_of_room, quant
                     for lesson in lessons:
                         if not is_searched:
                             if len(kwargs) == 0:
-                                group_is_busy = busy_group(id_group, day_with_oddness, lesson)
+                                more_1_group = more_1_window_group(id_group, day_with_oddness, lesson)
                             elif 'practice_subgroups' in kwargs:
-                                group_is_busy = busy_group(id_group, day_with_oddness, lesson, practice_subgroups=kwargs['practice_subgroups'])
+                                more_1_group = more_1_window_group(id_group, day_with_oddness, lesson, practise_subgroups=kwargs['practice_subgroups'])
                             elif 'laboratory_subgroups' in kwargs:
-                                group_is_busy = busy_group(id_group, day_with_oddness, lesson, laboratory_subgroups=kwargs['laboratory_subgroups'])
-                            if not group_is_busy:
-                                if not busy_teacher(id_teacher, day_with_oddness, lesson):
-                                    id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
-                                    if id_room:
-                                        if len(kwargs) == 0:
-                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
-                                        elif kwargs['practice_subgroups']:
-                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, practice_subgroups=kwargs['practice_subgroups'])
-                                        elif kwargs['laboratory_subgroups']:
-                                            add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, laboratory_subgroups=kwargs['laboratory_subgroups'])
-                                        hours -= 1
-                                        is_searched = True
-                                        break
+                                more_1_group = more_1_window_group(id_group, day_with_oddness, lesson, laboratory_subgroups=kwargs['laboratory_subgroups'])
+                            more_1_teacher = more_1_window_teacher(id_teacher, day_with_oddness, lesson)
+                            if not more_1_group and not more_1_teacher:
+                                if len(kwargs) == 0:
+                                    group_is_busy = busy_group(id_group, day_with_oddness, lesson)
+                                elif 'practice_subgroups' in kwargs:
+                                    group_is_busy = busy_group(id_group, day_with_oddness, lesson, practice_subgroups=kwargs['practice_subgroups'])
+                                elif 'laboratory_subgroups' in kwargs:
+                                    group_is_busy = busy_group(id_group, day_with_oddness, lesson, laboratory_subgroups=kwargs['laboratory_subgroups'])
+                                if not group_is_busy:
+                                    if not busy_teacher(id_teacher, day_with_oddness, lesson):
+                                        id_room = busy_room(type_of_room, day_with_oddness, lesson, quantity_of_students)
+                                        if id_room:
+                                            if len(kwargs) == 0:
+                                                add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room)
+                                            elif 'practice_subgroups' in kwargs:
+                                                add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, practice_subgroups=kwargs['practice_subgroups'])
+                                            elif 'laboratory_subgroups' in kwargs:
+                                                add_lesson(id_group, day_with_oddness, lesson, id_discipline, id_teacher, id_room, type_of_room, laboratory_subgroups=kwargs['laboratory_subgroups'])
+                                            hours -= 1
+                                            is_searched = True
+                                            break
         if not is_searched:
             print("Не удалось найти свободное время для дисциплины {} группы {}".format(id_discipline, id_group))
             break
@@ -171,12 +210,13 @@ def create_timetable():
                     allocation_of_week(practice_per_week[1], id_group, id_teacher, 0, "Для практических", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
             if len(subgroups[1]) != 0:
                 for subgroup in subgroups[1]:
-                    allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
-                    allocation_of_week(lab_per_week[1], id_group, id_teacher, 0, "Лабораторный", subgroup[3], id_discipline, practice_subgroups=subgroup[0])
+                    allocation_of_week(lab_per_week[0], id_group, id_teacher, 1, "Лабораторный", subgroup[3], id_discipline, laboratory_subgroups=subgroup[0])
+                    allocation_of_week(lab_per_week[1], id_group, id_teacher, 0, "Лабораторный", subgroup[3], id_discipline, laboratory_subgroups=subgroup[0])
     # print_timetable()
-    print_active_timetable()
+    # print_active_timetable()
     # print_teachers_timetable_for_teacher(1)
     # print_rooms()
+    print_timetable_for_group(2, "ПН нечет")
 
 if __name__ == '__main__':
     create_timetable()
