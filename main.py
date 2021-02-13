@@ -187,7 +187,13 @@ def toPer(hours):
     per_2weeks = hours / study_weeks
     return [int(per_2weeks // 2 + per_2weeks % 2), int(per_2weeks // 2)]
 
+def fill_in_table():
+    for double_class in timetable:
+        if double_class[3]:
+            db.fill_in_timetable(double_class[3], double_class[0], double_class[4], double_class[5], double_class[2], double_class[1], double_class[7], double_class[8], double_class[6])
+
 def create_timetable():
+    db.clean_timetable()
     for group in db.get_groups():
         id_group = group[0]
         name_of_group = group[1]
@@ -217,6 +223,7 @@ def create_timetable():
     # print_teachers_timetable_for_teacher(1)
     # print_rooms()
     print_timetable_for_group(2, "ПН нечет")
+    fill_in_table()
 
 if __name__ == '__main__':
     create_timetable()

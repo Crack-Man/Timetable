@@ -6,6 +6,16 @@ class Requests:
         self.connection = sqlite3.connect(database_file)
         self.cursor = self.connection.cursor()
 
+    def clean_timetable(self):
+        with self.connection:
+            return self.cursor.execute("DELETE FROM [Timetable]").fetchall()
+
+    def fill_in_timetable(self, id_discipline, id_group, id_teacher, id_room, lesson, day, id_practise, id_lab, type_class):
+        with self.connection:
+            return self.cursor.execute("INSERT INTO Timetable ("
+                          "[Код занятия], [Код группы], [Код преподавателя], [Код помещения], [Номер пары], [День недели], [Код практической подгруппы], [Код лабораторной подгруппы], [Тип занятия])"
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (id_discipline, id_group, id_teacher, id_room, lesson, day, id_practise, id_lab, type_class,)).fetchall()
+
     def get_groups(self):
         with self.connection:
             return self.cursor.execute("SELECT * FROM [Groups]").fetchall()
